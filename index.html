@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxury 3D Card Studio</title>
+    <style>
+        :root {
+            --gold: #e16f23;
+            --cream: #f5deb3;
+            --seal-red: #e00e7e;
+        }
+
+        /* ================= BODY ================= */
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: url('back.jpg') center/cover no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            color: white;
+        }
+
+        /* ================= PAGE TITLE (can be hidden) ================= */
+        #pageTitle {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 2.2rem;
+            color: #fff;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.4);
+            z-index: 101;
+            display: none;
+            /* hidden by default, can remove h1 visually */
+        }
+
+        /* ================= GLASS FORM ================= */
+        .form-container {
+            position: relative;
+            width: 420px;
+            padding: 50px 40px;
+            border-radius: 60px;
+            z-index: 100;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(45px) saturate(180%);
+            -webkit-backdrop-filter: blur(45px) saturate(180%);
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.08),
+                inset 0 0 25px rgba(255, 255, 255, 0.25),
+                0 30px 80px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        /* Glass shine */
+        .form-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            border-radius: 60px 60px 0 0;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.02));
+            pointer-events: none;
+        }
+
+        /* ================= FORM TEXT ================= */
+        .form-container h2 {
+            font-size: 26px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 30px;
+            font-weight: 700;
+            color: #000;
+        }
+
+        /* Inputs */
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 16px;
+            margin: 12px 0;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.7);
+            color: #000;
+            box-sizing: border-box;
+            font-family: inherit;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            background: #fff;
+            border-color: #000;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: rgba(0, 0, 0, 0.5);
+        }
+
+        /* Button */
+        .btn-main {
+            width: 100%;
+            padding: 18px;
+            margin-top: 20px;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-main:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ================= BACKGROUND EFFECTS ================= */
+        .bokeh {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .dot {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            filter: blur(50px);
+            animation: drift 25s infinite linear;
+        }
+
+        @keyframes drift {
+            from {
+                transform: translateY(110vh);
+            }
+
+            to {
+                transform: translateY(-10vh);
+            }
+        }
+
+        .edge-confetti {
+            position: absolute;
+            width: 12px;
+            height: 6px;
+            border-radius: 2px;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        /* ================= CARD SCENE ================= */
+        .scene {
+            display: none;
+            perspective: 2000px;
+            z-index: 10;
+            transform: translateY(80px);
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .btn-export {
+            padding: 10px 20px;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-export:hover {
+            opacity: 0.85;
+        }
+
+        .envelope {
+            position: relative;
+            width: 550px;
+            height: 350px;
+            cursor: pointer;
+        }
+
+        .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--cream);
+            border-radius: 4px;
+        }
+
+        .seal {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 55px;
+            height: 55px;
+            background: var(--seal-red);
+            border-radius: 50%;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.6s;
+        }
+
+        .seal::after {
+            content: "C";
+            color: var(--gold);
+            font-weight: bold;
+            font-size: 1.6rem;
+        }
+
+        .open .seal {
+            opacity: 0;
+            transform: translate(-50%, -150%) scale(0);
+        }
+
+        .side {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #e8cfa4;
+            z-index: 3;
+        }
+
+        .left {
+            clip-path: polygon(0 0, 50% 50%, 0 100%);
+        }
+
+        .right {
+            clip-path: polygon(100% 0, 50% 50%, 100% 100%);
+        }
+
+        .bottom-fold {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #dcc39b;
+            clip-path: polygon(0 100%, 50% 50%, 100% 100%);
+            z-index: 4;
+        }
+
+        .flap {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #e8cfa4;
+            clip-path: polygon(0 0, 50% 50%, 100% 0);
+            transform-origin: top;
+            transition: 0.8s ease;
+            z-index: 5;
+        }
+
+        .open .flap {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+
+        .card {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 480px;
+            height: 320px;
+            transition: 1s cubic-bezier(0.2, 0, 0.2, 1);
+            z-index: 1;
+        }
+
+        .open .card {
+            bottom: 140px;
+            z-index: 15;
+        }
+
+        .card-inside {
+            position: absolute;
+            inset: 0;
+            background: #fff;
+            padding: 30px;
+            color: #333;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .message-content {
+            overflow-y: auto;
+            padding-right: 10px;
+            text-align: center;
+            word-wrap: break-word;
+            flex-grow: 1;
+            margin: 15px 0;
+        }
+
+        .card-cover {
+            position: absolute;
+            inset: 0;
+            background: #fdfdfd;
+            border-left: 2px solid #ddd;
+            z-index: 2;
+            transform-origin: left;
+            transition: 1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backface-visibility: hidden;
+            border-radius: 4px;
+        }
+
+        .unfolded .card-cover {
+            transform: rotateY(-145deg);
+        }
+
+        #cardTitle {
+            color: var(--gold);
+            font-size: 1.6rem;
+            margin: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        #cardMessage {
+            line-height: 1.6;
+            font-size: 1.05rem;
+            color: #444;
+            white-space: pre-line;
+        }
+
+        .footer-text {
+            margin-top: auto;
+            font-style: italic;
+            color: #aaa;
+            font-size: 0.85rem;
+            padding-top: 10px;
+        }
+
+        /* ================= VALENTINE HEARTS ================= */
+        .heart {
+            position: fixed;
+            width: 18px;
+            height: 18px;
+            background: red;
+            transform: rotate(45deg);
+            animation: fall 6s linear forwards;
+            z-index: 9999;
+        }
+
+        .heart::before,
+        .heart::after {
+            content: "";
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: red;
+            border-radius: 50%;
+        }
+
+        .heart::before {
+            top: -9px;
+            left: 0;
+        }
+
+        .heart::after {
+            left: -9px;
+            top: 0;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-10vh) rotate(45deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(110vh) rotate(45deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bokeh" id="bokehContainer"></div>
+    <div id="edgeConfettiContainer"></div>
+
+    <!-- ================= FORM ================= -->
+    <div class="form-container" id="formContainer">
+        <h2>Card Creator</h2>
+        <input type="text" id="name" placeholder="Recipient Name">
+        <input type="text" id="senderName" placeholder="Your Name">
+
+        <select id="occasion">
+            <option value="A Special Celebration">Choose Occasion</option>
+            <option value="valentine">Be My Valentine</option>
+            <option value="Happy Birthday">Birthday</option>
+            <option value="Happy Birthday">Aniversary</option>
+            <option value="Congratulations">Achievement</option>
+        </select>
+        <textarea id="message" rows="4" placeholder="Your message..."></textarea>
+        <select id="color">
+            <option value="#f5deb3">Ivory</option>
+            <option value="#c08497">Rose</option>
+            <option value="#2c3e50">Navy</option>
+        </select>
+        <button class="btn-main" id="generateBtn">Preview Card</button>
+    </div>
+
+    <!-- ================= CARD SCENE ================= -->
+    <div class="scene" id="scene">
+        <div class="envelope" id="envelope">
+            <div class="seal"></div>
+            <div class="back" id="back"></div>
+            <div class="side left" id="leftSide"></div>
+            <div class="side right" id="rightSide"></div>
+            <div class="bottom-fold" id="bottomFold"></div>
+            <div class="flap" id="flap"></div>
+
+            <div class="card" id="card">
+                <div class="card-cover">
+                    <div style="border:1px solid var(--gold); padding:8px 16px; color:var(--gold);">OPEN</div>
+                </div>
+                <div class="card-inside">
+                    <h3 id="cardTitle"></h3>
+                    <div class="message-content">
+                        <p id="cardMessage"></p>
+                    </div>
+                    <div class="footer-text" id="footerText">Warmest regards</div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= CONTROLS ================= -->
+    <div class="controls" id="controls">
+        <button class="btn-export" id="exportHtmlBtn">💾 GET STANDALONE FILE</button>
+        <button class="btn-export" style="background:#444; color:#fff;" onclick="location.reload()">↺ CREATE
+            NEW</button>
+    </div>
+
+    <script>
+        /* ================= BACKGROUND EFFECTS ================= */
+
+        // Bokeh background
+        const bokeh = document.getElementById('bokehContainer');
+        for (let i = 0; i < 12; i++) {
+            let dot = document.createElement('div');
+            dot.className = 'dot';
+            dot.style.left = Math.random() * 100 + '%';
+            dot.style.width = dot.style.height = Math.random() * 120 + 120 + 'px';
+            dot.style.animationDelay = Math.random() * 15 + 's';
+            bokeh.appendChild(dot);
+        }
+
+        // Edge confetti
+        const edgeContainer = document.getElementById('edgeConfettiContainer');
+        const colors = ['#d4af37', '#ffffff', '#f5deb3', '#e8cfa4'];
+
+        for (let i = 0; i < 40; i++) {
+            const conf = document.createElement('div');
+            conf.className = 'edge-confetti';
+            conf.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+            const edge = Math.floor(Math.random() * 4);
+
+            if (edge === 0) {
+                conf.style.top = Math.random() * 10 + '%';
+                conf.style.left = Math.random() * 100 + '%';
+            } else if (edge === 1) {
+                conf.style.bottom = Math.random() * 10 + '%';
+                conf.style.left = Math.random() * 100 + '%';
+            } else if (edge === 2) {
+                conf.style.left = Math.random() * 10 + '%';
+                conf.style.top = Math.random() * 100 + '%';
+            } else {
+                conf.style.right = Math.random() * 10 + '%';
+                conf.style.top = Math.random() * 100 + '%';
+            }
+
+            conf.style.transform = `rotate(${Math.random() * 360}deg)`;
+            edgeContainer.appendChild(conf);
+        }
+
+        /* ================= CARD FUNCTIONALITY ================= */
+
+        const generateBtn = document.getElementById("generateBtn");
+        const exportHtmlBtn = document.getElementById("exportHtmlBtn");
+        const card = document.getElementById("card");
+        const envelope = document.getElementById("envelope");
+
+        let currentData = {};
+
+        /* ================= CONFETTI ================= */
+
+        function triggerConfetti() {
+            const confettiCount = 60;
+            const confettis = [];
+
+            for (let i = 0; i < confettiCount; i++) {
+                const conf = document.createElement('div');
+                conf.style.position = 'absolute';
+                conf.style.width = '8px';
+                conf.style.height = '8px';
+                conf.style.background = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.left = '50%';
+                conf.style.top = '40%';
+                conf.style.pointerEvents = 'none';
+                conf.style.zIndex = '1000';
+                document.body.appendChild(conf);
+
+                const angle = Math.random() * 2 * Math.PI;
+                const velocity = 4 + Math.random() * 6;
+                const rotationSpeed = (Math.random() - 0.5) * 10;
+
+                confettis.push({
+                    el: conf,
+                    x: 0,
+                    y: 0,
+                    vx: Math.cos(angle) * velocity,
+                    vy: Math.sin(angle) * velocity,
+                    gravity: 0,
+                    rotation: 0,
+                    rotationSpeed: rotationSpeed
+                });
+            }
+
+            function animate() {
+                for (let i = confettis.length - 1; i >= 0; i--) {
+                    const c = confettis[i];
+
+                    c.gravity += 0.3;
+                    c.x += c.vx;
+                    c.y += c.vy + c.gravity;
+                    c.rotation += c.rotationSpeed;
+
+                    c.el.style.transform = `translate(${c.x}px, ${c.y}px) rotate(${c.rotation}deg)`;
+
+                    if (c.y > window.innerHeight) {
+                        c.el.remove();
+                        confettis.splice(i, 1);
+                    }
+                }
+
+                if (confettis.length > 0) {
+                    requestAnimationFrame(animate);
+                }
+            }
+
+            animate();
+        }
+
+        /* ================= 💘 VALENTINE HEARTS ================= */
+
+        function triggerHearts() {
+            const heartCount = 35;
+
+            for (let i = 0; i < heartCount; i++) {
+                const heart = document.createElement("div");
+                heart.className = "heart";
+
+                heart.style.position = "fixed";
+                heart.style.left = Math.random() * 100 + "vw";
+                heart.style.top = "-30px";
+                heart.style.pointerEvents = "none";
+                heart.style.zIndex = "2000";
+
+                const drift = (Math.random() - 0.5) * 200; // horizontal drift
+                const duration = 3 + Math.random() * 2;
+                const delay = Math.random() * 1.5;
+
+                heart.style.animation = `scatterFall ${duration}s ease-in forwards ${delay}s`;
+                heart.style.setProperty('--drift', drift + 'px');
+
+                document.body.appendChild(heart);
+
+                setTimeout(() => heart.remove(), (duration + delay) * 1000);
+            }
+        }
+
+        // Heart animation CSS
+        const style = document.createElement("style");
+        style.innerHTML = `
+@keyframes scatterFall {
+    to {
+        transform: translate(var(--drift), 110vh) rotate(360deg);
+        opacity: 0;
+    }
+}`;
+        document.head.appendChild(style);
+
+        /* ================= GENERATE CARD ================= */
+
+        generateBtn.addEventListener("click", () => {
+            currentData = {
+                name: document.getElementById("name").value,
+                occasion: document.getElementById("occasion").value,
+                message: document.getElementById("message").value,
+                color: document.getElementById("color").value
+            };
+
+            if (!currentData.name || !currentData.message)
+                return alert("Fill out the form!");
+
+            document.getElementById("cardTitle").textContent = currentData.occasion;
+            document.getElementById("cardMessage").textContent =
+                `Dearest ${currentData.name},\n\n${currentData.message}`;
+
+            [
+                document.getElementById("back"),
+                document.getElementById("flap"),
+                document.getElementById("leftSide"),
+                document.getElementById("rightSide"),
+                document.getElementById("bottomFold")
+            ].forEach(el => el.style.background = currentData.color);
+
+            document.getElementById("formContainer").style.display = "none";
+            document.getElementById("scene").style.display = "block";
+            document.getElementById("controls").style.display = "flex";
+        });
+
+        /* ================= ENVELOPE CLICK ================= */
+
+        envelope.addEventListener("click", () => {
+
+            if (!envelope.classList.contains("open")) {
+                envelope.classList.add("open");
+
+            } else if (!card.classList.contains("unfolded")) {
+
+                card.classList.add("unfolded");
+
+                // Valentine → hearts, others → confetti
+                if (currentData.occasion === "valentine") {
+                    triggerHearts();
+                } else {
+                    triggerConfetti();
+                }
+
+            } else {
+
+                card.classList.remove("unfolded");
+                setTimeout(() => envelope.classList.remove("open"), 500);
+            }
+        });
+
+    </script>
+
+
+</body>
+
+</html>
